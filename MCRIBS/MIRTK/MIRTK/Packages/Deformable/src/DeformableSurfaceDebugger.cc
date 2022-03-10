@@ -78,7 +78,7 @@ void DeformableSurfaceDebugger::HandleEvent(Observable *obj, Event event, const 
         snprintf(suffix, sz, "_%03d", _Iteration);
         _Model->WriteDataSets(_Prefix.c_str(), suffix, debug >= 3);
       }
-      if (debug >= 2 && (_Iteration == 1 || (_Iteration % _Interval) == 0)) {
+      if (debug >= 3 && (_Iteration == 1 || (_Iteration % _Interval) == 0)) {
         snprintf(suffix, sz, "_%03d", _Iteration);
         _Model->WriteGradient(_Prefix.c_str(), suffix);
         if (euler) {

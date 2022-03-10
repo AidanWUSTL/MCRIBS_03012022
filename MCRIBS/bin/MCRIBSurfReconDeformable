@@ -104,7 +104,6 @@ fi
 
 recon-neonatal-cortex -r `pwd` -c $CONFIGFILE -s $SUBJID -t $OMP_NUM_THREADS -v -v -v -v -d -d -f $ENSUREPIAL -j $J $USEFASTCOLLISION 2>&1 | tee -a logs/$SUBJID.log
 #econ-neonatal-cortex -r `pwd` -c $CONFIGFILE -s $SUBJID -t $OMP_NUM_THREADS -v -v -v -v -d -d -f -j $J $USEFASTCOLLISION 2>&1 | tee -a logs/$SUBJID.log
-#exit
 RECONRETURNCODE=${PIPESTATUS[0]}
 
 if [ "$RECONRETURNCODE" != "0" ]

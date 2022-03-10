@@ -619,8 +619,8 @@ def recon_neonatal_cortex(config, section, config_vars,
                                        temp=temp_dir, check=check, use_fast_collision=use_fast_collision, opts=white_opts)
 
             # remove initial surface mesh
-            if not with_cerebrum_mesh:
-                os.remove(cerebrum_mesh)
+            #if not with_cerebrum_mesh:
+            #    os.remove(cerebrum_mesh)
 
         # insert internal mesh and cut surface at medial plane
         if with_white_mesh:

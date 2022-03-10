@@ -178,6 +178,16 @@ else:
     Pial5Surf = freesurfer.readSurf(os.path.join(inDir, 'temp', 'pial-5_world.surf'))
     Pial6Surf = freesurfer.readSurf(os.path.join(inDir, 'temp', 'pial-6_world.surf'))
 
+print("PialLHSurf verts: " + str(PialLHSurf['vertices'].shape))
+print("WhiteLHSurf verts: " + str(WhiteLHSurf['vertices'].shape))
+print("PialRHSurf verts: " + str(PialRHSurf['vertices'].shape))
+print("WhiteRHSurf verts: " + str(WhiteRHSurf['vertices'].shape))
+
+print("PialLHSurf faces: " + str(PialLHSurf['faces'].shape))
+print("WhiteLHSurf faces: " + str(WhiteLHSurf['faces'].shape))
+print("PialRHSurf faces: " + str(PialRHSurf['faces'].shape))
+print("WhiteRHSurf faces: " + str(WhiteRHSurf['faces'].shape))
+
 if WhiteInternalSurf is None:
     print("WhiteInternalSurf not found")
     exit()
@@ -398,6 +408,8 @@ outS['faces'] = numpy.array(WhiteLHSurf['faces'])
 outS['vertices'] = numpy.zeros_like(WhiteLHSurf['vertices'])
 outS['vertices'][:, LHIDX] = PialLHSurf['vertices'][:, PialLHPialCortexIDX]
 #outS['vertices'][:, PialLHPialCortexIDX[LHIDX < 0]] = PialLHSurf['vertices'][:, PialLHPialCortexIDX[LHIDX < 0]]
+
+#print("PialLHPialCortexMask: " + str(PialLHPialCortexMask.size)
 
 outS['vertices'][:, numpy.logical_not(PialLHPialCortexMask)] = WhiteLHSurf['vertices'][:, numpy.logical_not(PialLHPialCortexMask)]
 outLHMask[LHIDX] = True

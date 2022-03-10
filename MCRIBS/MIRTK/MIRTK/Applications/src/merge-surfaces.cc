@@ -1777,7 +1777,7 @@ void SmoothLineStrip(vtkSmartPointer<vtkPolyData> cut, int niter = 1)
   int   i1, i2;
   Point p1, p2, p3;
 
-  cut->BuildLinks();  
+  cut->BuildLinks();
 
   vtkSmartPointer<vtkPoints> points;
   points = vtkSmartPointer<vtkPoints>::New();
@@ -3195,6 +3195,7 @@ int main(int argc, char *argv[])
     if (verbose > 0) cout << " done" << endl;
 
     if (debug > 0) {
+      //
       WritePolyData("debug_joined_boundaries.vtp", output);
     }
 
