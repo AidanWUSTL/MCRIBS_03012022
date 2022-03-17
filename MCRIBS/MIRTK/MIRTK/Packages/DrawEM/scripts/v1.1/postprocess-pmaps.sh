@@ -23,6 +23,12 @@
 [ $# -eq 1 ] || { echo "usage: $(basename "$0") <subject>" 1>&2; exit 1; }
 subj=$1
 
+
+run(){
+  echo "$@"
+  "$@" || exit 1
+}
+
 rdir=posteriors
 sdir=segmentations-data
 
