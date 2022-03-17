@@ -26,6 +26,11 @@ scriptdir=$(dirname "$BASH_SOURCE")
 sdir=segmentations-data
 mkdir -p $sdir/corrections || exit 1
 
+run(){
+  echo "$@"
+  "$@" || exit 1
+}
+
 # cleaning up small ventricle components
 run mirtk padding segmentations/$subj-em.nii.gz segmentations/$subj-em.nii.gz $sdir/corrections/$subj-hwm-init.nii.gz 26 0 -invert
 run mirtk padding segmentations/$subj-initial.nii.gz segmentations/$subj-initial.nii.gz $sdir/corrections/$subj-ven-init.nii.gz 2 49 50 0 -invert 2 49 50 1
