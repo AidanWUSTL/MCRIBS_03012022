@@ -22,6 +22,11 @@
 [ $# -eq 1 ] || { echo "usage: $(basename "$0") <subject>"; exit 1; }
 subj=$1
 
+run(){
+  echo "$@"
+  "$@" || exit 1
+}
+
 scriptdir=$(dirname "$BASH_SOURCE")
 
 
