@@ -32,6 +32,12 @@ else
   export PATH="$FSLDIR/bin:$PATH"
 fi
 
+run(){
+  echo "$@"
+  "$@" || exit 1
+}
+
+
 sdir=segmentations-data
 
 mkdir -p segmentations N4 dofs bias || exit 1
