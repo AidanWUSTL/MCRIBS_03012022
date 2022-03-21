@@ -65,7 +65,7 @@ else
 	if [ ! -f "$OUTDIR/${SUBJID}_all_labels_manedit.nii.gz" ]
 	then
 		#ln -sf ${SUBJID}_all_labels.nii.gz $OUTDIR/${SUBJID}_all_labels_manedit.nii.gz
-		cp $OUTDIR/${SUBJID}_all_labels.nii.gz $OUTDIR/${SUBJID}_all_labels_manedit.nii.gz
+		cp $DRAWEMOUTDIR/segmentations/${SUBJID}_all_labels.nii.gz $OUTDIR/${SUBJID}_all_labels_manedit.nii.gz
 	fi
 	DRAWEMIMAGE=$OUTDIR/${SUBJID}_all_labels_manedit.nii.gz
 	ASEGIMAGE=freesurfer/$SUBJID/mri/aseg.presurf.preunwmfix.mgz
