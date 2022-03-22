@@ -43,7 +43,6 @@ if [ ! -f N4/$subj.nii.gz ];then
   if [ ! -f segmentations/${subj}_brain_mask.nii.gz ];then
     #brain extract
     run bet N4/${subj}_rescaled.nii.gz segmentations/${subj}_brain.nii.gz -R -f 0.1 -m 
-    cp segmentations/${subj}_brain_mask.nii.gz ../../TissueSeg/
     rm segmentations/${subj}_brain.nii.gz
   fi
 
