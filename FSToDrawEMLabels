@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import numpy
+import nibabel
+
+if len(sys.argv) < 3:
+    print(sys.argv[0] + " <infile> <outfile>")
+    quit()
+
+inFileName = sys.argv[1]
+outFileName = sys.argv[2]
+
+if not os.path.isfile(inFileName):
+    print("input file not found")
+    quit()
+
+NII = nibabel.load(inFileName)
+IMG = numpy.int16(NII.get_fdata())
+
+replaceHash = dict()
+
+# replace the left cortical labels with 5
+for z in range(1000, 1036):
+    replaceHash[z] = 5    
+
+# replace the right cortical labels with 20
+for z in range(2000, 2036):
+    replaceHash[z] = 22
+
+replaceHash[42] = 22
+replaceHash[3] = 5
+
+# WM
+replaceHash[41] = 58
+replaceHash[999] = 57
+replaceHash[2] = 57
+
+# brainstem
+replaceHash[170] = 19
+
+# cerebellum
+replaceHash[91] = 17
+replaceHash[93] = 18
+replaceHash[75] = 17
+replaceHash[90] = 17
+replaceHash[76] = 17
+
+# 3rd ventricles
+replaceHash[14] = 83
+replaceHash[15] = 83
+
+# Corpus Callosum
+replaceHash[192] = 48
+replaceHash[253] = 48
+
+# ventricles
+replaceHash[4] = 49
+replaceHash[43] = 50
+replaceHash[31] = 49
+replaceHash[63] = 50
+
+# hippocampus
+replaceHash[53] = 2
+replaceHash[17] = 1
+#replaceHash[53] = 58
+#replaceHash[17] = 57
+
+# caudate
+replaceHash[50] = 40
+replaceHash[11] = 41
+
+# accumbens
+replaceHash[58] = 40
+replaceHash[26] = 41
+
+# putamen/lentiform nucleus
+replaceHash[51] = 46
+replaceHash[12] = 47
+replaceHash[52] = 46
+replaceHash[13] = 47
+
+# thalamus
+replaceHash[48] = 42
+replaceHash[9] = 87
+
+#CSF
+replaceHash[24] = 83
+
+# cranial background?
+replaceHash[89] = 85
+replaceHash[92] = 85
+
+# amygdala
+replaceHash[54] = 4
+replaceHash[18] = 3
+
+# VENTRAL DC
+replaceHash[60] = 58
+replaceHash[28] = 57
+
+hashKeys = numpy.array(list(replaceHash.keys()))
+
+II = numpy.argsort(hashKeys)
+hashValues = numpy.array(list(replaceHash.values()))[II]
+
+I = numpy.reshape(numpy.in1d(IMG.ravel(), hashKeys[II]), IMG.shape)
+J = numpy.searchsorted(hashKeys[II], IMG[I])
+
+IMG[I] = hashValues[J]
+
+NewNII = nibabel.Nifti1Image(numpy.int16(IMG), NII.affine)
+nibabel.save(NewNII, outFileName)
+

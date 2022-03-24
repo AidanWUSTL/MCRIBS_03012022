@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+	echo "Usage: $0 <subject id>"
+	exit
+fi
+
+SUBJID=$1
+
+#if [ ! -f "surf_ensurewhite/$SUBJID/temp/white-5.CollisionMask.curv" -o ! -z "$2" ]
+#then
+#	./extract_all_vtp_indir.sh DrawEM/$SUBJID/T2/${SUBJID}.nii.gz surf_ensurewhite/$SUBJID/temp
+#fi
+VOLGEOM=TissueSeg/${SUBJID}_t2w_restore.nii.gz
+
+#export MCRIBS_HOME=$HOME/MCRIBST1Only/MCRIBS
+
+VTPExtractAll --surf-volgeom=$VOLGEOM SurfReconDeformable/$SUBJID/temp/white-1.vtp
+#./VTPExtractAll --surf-volgeom=$VOLGEOM SurfReconDeformable/$SUBJID/meshes/white.vtp &
+#./VTPExtractAll --surf-volgeom=$VOLGEOM SurfReconDeformable/$SUBJID/meshes/white+internal.vtp &
+TISSUESEGDIR=TissueSegMCRIBS
+$MCRIBS_HOME/MIRTK/MIRTK-install/lib/tools/evaluate-surface-mesh SurfReconDeformable/$SUBJID/temp/white-4.vtp SurfReconDeformable/$SUBJID/temp/white-4_eval.vtp -v -v -threads `nproc` -collisions 0
+
+VTPExtractAll --surf-volgeom=$VOLGEOM SurfReconDeformable/$SUBJID/temp/white-4_eval.vtp
+
+W=`PialDisplayCollisionVertices SurfReconDeformable/$SUBJID/temp/white-4_eval.vtp`
+freeview \
+	-v $VOLGEOM \
+	-v SurfReconDeformable/$SUBJID/recon/regions.nii.gz:colormap=lut \
+	-f SurfReconDeformable/$SUBJID/temp/white-1_tkr.surf:edgecolor=blue \
+	-f SurfReconDeformable/$SUBJID/temp/white-4_eval_tkr.surf:overlay=SurfReconDeformable/$SUBJID/temp/white-4_eval.CollisionMask.curv:edgecolor=overlay:goto=$W 
+	
+#-v SurfReconDeformable/$SUBJID/recon/regions.nii.gz \
