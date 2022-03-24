@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import numpy
+import scipy.ndimage
+import nibabel
+import skimage.morphology
+
+def ismember(A, B):
+    return numpy.reshape(numpy.in1d(A.ravel(), B), DKTIMG.shape)
+
+if len(sys.argv) < 2:
+    print("Usage " + sys.argv[0] + " <subjid>")
+    quit()
+
+subjID = sys.argv[1]
+
+T1NII = nibabel.load(subjID + '_t1.nii.gz')
+T1IMG = T1NII.get_fdata()
+T2NII = nibabel.load(subjID + '_t2.nii.gz')
+T2IMG = T2NII.get_fdata()
+
+MarkerNII = nibabel.load(subjID + '_t2OtsuSkull.nii.gz')
+MarkerIMG = numpy.uint8(MarkerNII.get_fdata() > 0)
+
+TopHatNII = nibabel.load(subjID + '_t1_tophat.nii.gz')
+TopHatIMG = TopHatNII.get_fdata()
+
+DKTNII = nibabel.load(subjID + '_dkt.nii.gz')
+DKTIMG = numpy.uint16(DKTNII.get_fdata())
+
+InternalMask = numpy.logical_not(ismember(DKTIMG, [0, 258]))
+InternalDilatedMask = scipy.ndimage.binary_dilation(InternalMask)
+
+ExternalBorder = numpy.logical_and(numpy.logical_not(InternalMask), InternalDilatedMask)
+
+I = numpy.where(ExternalBorder)
+
+ToKeep = numpy.zeros_like(T1IMG, dtype = numpy.bool)
+
+InternalMaskFiltered = scipy.ndimage.uniform_filter(InternalMask, size = 5)
+InternalMaskFiltered[InternalMaskFiltered == 0] = 1
+InternalT2Filtered = scipy.ndimage.uniform_filter(T2IMG * InternalMask, size = 5)
+
+ExternalMaskFiltered = scipy.ndimage.uniform_filter(numpy.logical_not(InternalMask), size = 5)
+ExternalMaskFiltered[ExternalMaskFiltered == 0] = 1
+ExternalT2Filtered = scipy.ndimage.uniform_filter(T2IMG * numpy.logical_not(InternalMask), size = 5)
+
+InternalT2Filtered = InternalT2Filtered / InternalMaskFiltered
+ExternalT2Filtered = ExternalT2Filtered / ExternalMaskFiltered
+
+InternalT2FilteredDilated = scipy.ndimage.grey_dilation(InternalT2Filtered, size = (3, 3, 3))
+
+ToKeep = ExternalT2Filtered > 0.75 * InternalT2FilteredDilated
+
+#SearchSize = 3
+#for z in range(len(I[0])):
+#    curI = numpy.arange(numpy.maximum(0, I[0][z] - SearchSize), numpy.minimum(T2IMG.shape[0], I[0][z] + SearchSize))
+#    curJ = numpy.arange(numpy.maximum(0, I[1][z] - SearchSize), numpy.minimum(T2IMG.shape[1], I[1][z] + SearchSize))
+#    curK = numpy.arange(numpy.maximum(0, I[2][z] - SearchSize), numpy.minimum(T2IMG.shape[2], I[2][z] + SearchSize))
+    
+#    curT2 = T2IMG.take(curI, axis = 0).take(curJ, axis = 1).take(curK, axis = 2)
+#    curInternalMask = InternalMask.take(curI, axis = 0).take(curJ, axis = 1).take(curK, axis = 2)
+    
+#    MeanInside = numpy.mean(curT2[curInternalMask])
+#    MeanOutside = numpy.mean(curT2[numpy.logical_not(curInternalMask)])
+    
+#    if MeanInside > 2 * MeanOutside:
+#        ToKeep[I[0][z], I[1][z], I[2][z]] = False
+
+
+#Marker = T1IMG * MarkerIMG
+#Marker = numpy.array(T1IMG)
+#Marker[numpy.logical_not(MarkerIMG)] = 0
+#nnerMarker = numpy.logical_not(scipy.ndimage.binary_dilation(MarkerIMG, iterations = 5))
+
+NewNII = nibabel.Nifti1Image(numpy.uint8(ToKeep), T1NII.affine)
+nibabel.save(NewNII, subjID + "_external_tokeep.nii.gz")
+#ewNII = nibabel.Nifti1Image(Marker, T1NII.affine)
+#ibabel.save(NewNII, subjID + "_marker.nii.gz")
+
+#ewNII = nibabel.Nifti1Image(W - Marker, T1NII.affine)
+#ibabel.save(NewNII, subjID + "_markerd.nii.gz")
+
+#NewNII = nibabel.Nifti1Image(numpy.uint8(InnerMarker), T1NII.affine)
+#nibabel.save(NewNII, subjID + "_inner_marker.nii.gz")

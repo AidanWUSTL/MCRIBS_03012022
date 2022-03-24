@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import numpy
+import scipy.ndimage
+import nibabel
+import skimage.morphology
+
+if len(sys.argv) < 2:
+    print("Usage " + sys.argv[0] + " <subjid>")
+    quit()
+
+subjID = sys.argv[1]
+
+T1NII = nibabel.load(subjID + '_t1.nii.gz')
+T1IMG = T1NII.get_fdata()
+
+MarkerNII = nibabel.load(subjID + '_t2OtsuSkull.nii.gz')
+MarkerIMG = numpy.uint8(MarkerNII.get_fdata() > 0)
+
+TopHatNII = nibabel.load(subjID + '_t1_tophat.nii.gz')
+TopHatIMG = TopHatNII.get_fdata()
+
+DKTNII = nibabel.load(subjID + '_dkt.nii.gz')
+DKTIMG = numpy.uint16(DKTNII.get_fdata())
+
+#Marker = T1IMG * MarkerIMG
+#Marker = numpy.array(T1IMG)
+#Marker[numpy.logical_not(MarkerIMG)] = 0
+#nnerMarker = numpy.logical_not(scipy.ndimage.binary_dilation(MarkerIMG, iterations = 5))
+
+StrongMask = TopHatIMG > 200
+WeakMask = TopHatIMG > 100
+#MarkerIMG[InnerMarker] = 2
+#W = skimage.morphology.watershed(-T1IMG, MarkerIMG)
+W = skimage.morphology.reconstruction(StrongMask, WeakMask)
+
+W[numpy.logical_or(numpy.reshape(numpy.in1d(DKTIMG.ravel(), [2, 31, 63, 41, 14, 90, 93, 192]), DKTIMG.shape), DKTIMG >= 1000)] = 0
+NewNII = nibabel.Nifti1Image(W, T1NII.affine)
+nibabel.save(NewNII, subjID + "_tophat_hysteresis.nii.gz")
+#ewNII = nibabel.Nifti1Image(Marker, T1NII.affine)
+#ibabel.save(NewNII, subjID + "_marker.nii.gz")
+
+#ewNII = nibabel.Nifti1Image(W - Marker, T1NII.affine)
+#ibabel.save(NewNII, subjID + "_markerd.nii.gz")
+
+#NewNII = nibabel.Nifti1Image(numpy.uint8(InnerMarker), T1NII.affine)
+#nibabel.save(NewNII, subjID + "_inner_marker.nii.gz")

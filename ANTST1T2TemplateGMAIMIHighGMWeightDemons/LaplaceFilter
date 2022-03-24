@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import numpy
+import scipy.ndimage
+import nibabel
+
+if len(sys.argv) < 3:
+    print("Usage " + sys.argv[0] + " <in image> <out image>")
+    quit()
+
+inImage = sys.argv[1]
+outImage = sys.argv[2]
+
+if not os.path.isfile(inImage):
+    print("File not found")
+    quit()
+
+NII = nibabel.load(inImage)
+IMG = NII.get_fdata()
+
+OutIMG = scipy.ndimage.gaussian_laplace(IMG, 1)
+
+NewNII = nibabel.Nifti1Image(numpy.single(OutIMG), NII.affine)
+nibabel.save(NewNII, outImage)

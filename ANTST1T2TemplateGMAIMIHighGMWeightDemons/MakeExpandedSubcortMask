@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import numpy
+import sys
+import os
+import nibabel
+import scipy.ndimage
+
+def ismember(A, B):
+    return numpy.reshape(numpy.in1d(A.ravel(), numpy.array(B)), A.shape)
+
+T1NII = nibabel.load("Finaltemplate1.nii.gz")
+T1IMG = numpy.single(T1NII.get_fdata())
+
+DKTNII = nibabel.load("FinaltemplateDKTWithSkullMajority.nii.gz")
+DKTIMG = numpy.int16(DKTNII.get_fdata())
+
+G = scipy.ndimage.gaussian_laplace(T1IMG, 2)
+
+#GMMaskDilated = scipy.ndimage.binary_dilation(numpy.logical_or(numpy.logical_and(DKTIMG >= 2000, DKTIMG <= 2035), numpy.logical_and(DKTIMG >= 1000, DKTIMG <= 1035)))
+
+LHSubCortMask = ismember(DKTIMG, [4, 9, 31, 11, 12, 13])
+LHSubCortMaskClosed = scipy.ndimage.binary_closing(LHSubCortMask, iterations = 15)
+LHAdded = numpy.logical_and(LHSubCortMaskClosed, numpy.logical_not(LHSubCortMask))
+LHSubCortMask = numpy.logical_and(LHAdded, scipy.ndimage.binary_dilation(DKTIMG == 11, iterations = 5))
+
+curLHSubCortMask = numpy.array(LHSubCortMask)
+for z in range(5):
+    newLHSubCortMask = numpy.logical_and(numpy.logical_not(curLHSubCortMask), scipy.ndimage.binary_dilation(curLHSubCortMask, iterations = 2))
+    newLHSubCortMask = numpy.logical_and(newLHSubCortMask, numpy.logical_and(G < 0, DKTIMG == 2))
+    curLHSubCortMask = numpy.logical_or(curLHSubCortMask, newLHSubCortMask)
+curLHSubCortMask = scipy.ndimage.binary_closing(curLHSubCortMask, iterations = 3)
+#NewNII = nibabel.Nifti1Image(numpy.uint8(curLHSubCortMask), DKTNII.affine)
+#nibabel.save(NewNII, os.path.join(TissueSegDir, subjID, subjID + "_ccc.nii.gz"))
+
+RHSubCortMask = ismember(DKTIMG, [34, 63, 48, 49, 50, 51])
+RHSubCortMaskClosed = scipy.ndimage.binary_closing(RHSubCortMask, iterations = 15)
+RHAdded = numpy.logical_and(RHSubCortMaskClosed, numpy.logical_not(RHSubCortMask))
+RHSubCortMask = numpy.logical_and(RHAdded, scipy.ndimage.binary_dilation(DKTIMG == 50, iterations = 5))
+
+curRHSubCortMask = numpy.array(RHSubCortMask)
+for z in range(5):
+    newRHSubCortMask = numpy.logical_and(numpy.logical_not(curRHSubCortMask), scipy.ndimage.binary_dilation(curRHSubCortMask, iterations = 2))
+    newRHSubCortMask = numpy.logical_and(newRHSubCortMask, numpy.logical_and(G < 0, DKTIMG == 41))
+    curRHSubCortMask = numpy.logical_or(curRHSubCortMask, newRHSubCortMask)
+curRHSubCortMask = scipy.ndimage.binary_closing(curRHSubCortMask, iterations = 3)
+#NewNII = nibabel.Nifti1Image(numpy.uint8(curRHSubCortMask), DKTNII.affine)
+#nibabel.save(NewNII, os.path.join(TissueSegDir, subjID, subjID + "_ddd.nii.gz"))
+
+newSubcortMask = numpy.logical_or(curRHSubCortMask, curLHSubCortMask)
+newSubcortMask = numpy.logical_or(newSubcortMask, ismember(DKTIMG, [9, 48, 13, 52, 12, 51, 11, 50]))
+NewNII = nibabel.Nifti1Image(numpy.uint8(newSubcortMask), DKTNII.affine)
+nibabel.save(NewNII, "FinaltemplateDKTMajoritySubCorticalGreyMaskExpanded.nii.gz")
+
+#DKTIMG[scipy.ndimage.binary_dilation(numpy.logical_or(TemplateDKTIMG == 91, TemplateDKTIMG == 93), iterations = 4)] = 24
+# retain largest
+
+#LHVentDilated = scipy.ndimage.binary_dilation(DKTIMG == 4, iterations = 5)
+
+#NewNII = nibabel.Nifti1Image(numpy.int16(LHTissueMaskIMG), DKTNII.affine)
+#Nibabel.save(NewNII, os.path.join(TissueSegDir, subjID, subjID + "_lhtissue.nii.gz"))
+#NewNII = nibabel.Nifti1Image(numpy.int16(RHTissueMaskIMG), DKTNII.affine)
+#nibabel.save(NewNII, os.path.join(TissueSegDir, subjID, subjID + "_rhtissue.nii.gz"))
+#NewNII = nibabel.Nifti1Image(numpy.int16(LHTissueMaskIMGClosed), DKTNII.affine)
+#nibabel.save(NewNII, os.path.join(TissueSegDir, subjID, subjID + "_lhtissueclosed.nii.gz"))
+#NewNII = nibabel.Nifti1Image(numpy.int16(RHTissueMaskIMGClosed), DKTNII.affine)
+#nibabel.save(NewNII, os.path.join(TissueSegDir, subjID, subjID + "_rhtissueclosed.nii.gz"))
+
+#NewNII = nibabel.Nifti1Image(numpy.int16(DKTIMG), DKTNII.affine)
+#nibabel.save(NewNII, bjID, subjID + "_labelfusionimage_vent_fixed.nii.gz"))
+#NewNII = nibabel.Nifti1Image(numpy.int16(rightHippoDilated), DKTNII.affine)
+#nibabel.save(NewNII, os.path.join(TissueSegDir, subjID, subjID + "_rightHippo.nii.gz"))
+

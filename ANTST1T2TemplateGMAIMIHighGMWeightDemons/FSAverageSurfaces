@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import freesurfer
+import sys
+import os
+import numpy
+import copy
+
+if len(sys.argv) < 2:
+    print("Usage " + sys.argv[0] + " <outsurf> <insurf0> [insurf1] [insurf2] ...")
+    quit()
+
+outSurf = None
+
+numSurfaces = 0
+
+for z in range(2, len(sys.argv)):
+    if not os.path.isfile(sys.argv[z]):
+        print("Warning file not found: " + sys.argv[z])
+    else:
+        curSurf = freesurfer.readSurf(sys.argv[z])
+        numSurfaces = numSurfaces + 1
+        if outSurf is None:
+            outSurf = copy.deepcopy(curSurf)
+        else:
+            outSurf['vertices'] = outSurf['vertices'] + curSurf['vertices']
+
+if not outSurf is None:
+    outSurf['vertices'] = outSurf['vertices'] / numSurfaces
+    freesurfer.writeSurf(outSurf, sys.argv[1], convertToTKR=False)

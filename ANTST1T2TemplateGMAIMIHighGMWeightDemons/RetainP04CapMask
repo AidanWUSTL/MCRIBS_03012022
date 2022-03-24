@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import numpy
+import scipy.ndimage
+import nibabel
+import skimage.morphology
+
+if len(sys.argv) < 2:
+    print("Usage " + sys.argv[0] + " <subjid>")
+    quit()
+
+subjID = sys.argv[1]
+
+T1NII = nibabel.load(subjID + '_t1.nii.gz')
+T1IMG = T1NII.get_fdata()
+
+OtsuSkullNII = nibabel.load(subjID + '_t2OtsuSkull.nii.gz')
+OtsuSkullIMG = (OtsuSkullNII.get_fdata() > 0)
+
+DKTNII = nibabel.load(subjID + '_dkt.nii.gz')
+DKTIMG = numpy.int16(DKTNII.get_fdata())
+
+MaskNII = nibabel.load(subjID + '_FinaltemplatePaddedRegMask.nii.gz')
+MaskIMG = MaskNII.get_fdata() > 0
+
+RemovedByMaskIMG = numpy.logical_and(numpy.logical_not(MaskIMG), OtsuSkullIMG)
+
+L, numLabels = scipy.ndimage.label(RemovedByMaskIMG)
+
+N = numpy.bincount(L[L > 0])
+
+ToKeep = numpy.zeros_like(MaskIMG, dtype = numpy.bool)
+
+for z in range(1, numLabels + 1):
+    I = numpy.where(L == z)
+    #print(str(z) + ": [" + str(numpy.mean(I[0])) + ", " + str(numpy.mean(I[1])) + ", "  + str(numpy.mean(I[2])) + "]")
+    if numpy.mean(I[2]) > 100 and N[z] > 50:
+        ToKeep[I] = True
+
+#NewNII = nibabel.Nifti1Image(numpy.int16(L), T1NII.affine)
+#nibabel.save(NewNII, subjID + "_L.nii.gz")
+NewNII = nibabel.Nifti1Image(numpy.uint8(ToKeep), T1NII.affine)
+nibabel.save(NewNII, subjID + "_tokeep.nii.gz")
+
+DKTForeground = numpy.logical_not(numpy.logical_or(DKTIMG == 0, DKTIMG == 258))
+DKTForegroundDilated = scipy.ndimage.binary_dilation(DKTForeground, iterations = 5)
+
+L, numLabels = scipy.ndimage.label(scipy.ndimage.binary_opening(T1IMG > 1100, iterations = 3))
+
+N = numpy.bincount(L[L > 0])
+
+ToKeep = numpy.zeros_like(MaskIMG, dtype = numpy.bool)
+
+for z in range(1, numLabels + 1):
+    I = numpy.where(L == z)
+    #print(str(z) + ": [" + str(numpy.mean(I[0])) + ", " + str(numpy.mean(I[1])) + ", "  + str(numpy.mean(I[2])) + "]")
+    if numpy.mean(I[2]) > 100 and N[z] > 200:
+        ToKeep[I] = True
+ToKeepDilated = scipy.ndimage.binary_dilation(ToKeep, iterations = 4)
+
+ToRemove = numpy.logical_or(numpy.logical_and(DKTForegroundDilated, ToKeepDilated), ToKeep)
+
+NewNII = nibabel.Nifti1Image(numpy.uint8(ToRemove), T1NII.affine)
+nibabel.save(NewNII, subjID + "_toremovebump.nii.gz")
+#NewNII = nibabel.Nifti1Image(numpy.int16(L), T1NII.affine)
+#nibabel.save(NewNII, subjID + "_L.nii.gz")
+
+#ewNII = nibabel.Nifti1Image(Marker, T1NII.affine)
+#ibabel.save(NewNII, subjID + "_marker.nii.gz")
+
+#ewNII = nibabel.Nifti1Image(W - Marker, T1NII.affine)
+#ibabel.save(NewNII, subjID + "_markerd.nii.gz")
+
+#NewNII = nibabel.Nifti1Image(numpy.uint8(InnerMarker), T1NII.affine)
+#nibabel.save(NewNII, subjID + "_inner_marker.nii.gz")
