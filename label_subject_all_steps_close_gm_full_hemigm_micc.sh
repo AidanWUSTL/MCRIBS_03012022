@@ -64,7 +64,7 @@ H=`hostname`
 export TISSUESEGDIR=TissueSegMCRIBS
 mkdir -p ${TISSUESEGDIR}/${SUBJID}
 
-export TEMPLATEDIR=/home/addo/MCRIownCloud/deve2-chris.adamson/neonatal/OrigImagesLabelledLaPrem/ANTST1T2TemplateGMAIMIHighGMWeightDemons
+export TEMPLATEDIR=/opt/MCRIBS/ANTST1T2TemplateGMAIMIHighGMWeightDemons
 #export TEMPLATEDIR=/group/deve2/data/addo/neonatal/OrigImagesLabelledLaPrem/ANTST1T2TemplateGMAIMIHighGMWeightDemons
 export T2TEMPLATE=$TEMPLATEDIR/Finaltemplate0.nii.gz
 export T2TEMPLATELAPLACIAN=$TEMPLATEDIR/Finaltemplate0Laplacian.nii.gz
