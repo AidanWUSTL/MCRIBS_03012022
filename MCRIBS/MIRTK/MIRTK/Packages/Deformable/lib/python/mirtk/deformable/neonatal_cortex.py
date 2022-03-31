@@ -1577,8 +1577,8 @@ def recon_white_surface(name, t2w_image, wm_mask, gm_mask, cortex_mesh, bs_cb_me
         }
         model_opts.update(opts)
         if use_mask_distance:
-            model_opts['implicit-surface'] = push_output(stack, calculate_distance_map(wm_mask, temp=temp))
-            #model_opts['implicit-surface'] = push_output(stack, os.path.join(temp, 'wm_force.nii.gz'))
+            #model_opts['implicit-surface'] = push_output(stack, calculate_distance_map(wm_mask, temp=temp))
+            model_opts['implicit-surface'] = push_output(stack, os.path.join(temp, 'wm_force.nii.gz'))
         else:
             remove_keys(model_opts, [
                 'distance',
