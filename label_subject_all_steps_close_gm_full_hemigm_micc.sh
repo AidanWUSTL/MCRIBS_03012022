@@ -61,7 +61,7 @@ then
 
 fi
 H=`hostname`
-export TISSUESEGDIR=TissueSegMCRIBS
+export TISSUESEGDIR=/indata/TissueSegMCRIBS
 mkdir -p ${TISSUESEGDIR}/${SUBJID}
 
 export TEMPLATEDIR=/opt/MCRIBS/ANTST1T2TemplateGMAIMIHighGMWeightDemons
@@ -75,7 +75,7 @@ export T1TEMPLATEBRAIN=$TEMPLATEDIR/Finaltemplate1Brain.nii.gz
 #TEMPLATEDIR=$HOME/MCRIownCloud/deve2-chris.adamson/neonatal/BrainMaskAtlas/
 FSDIR=../LaPrem/freesurfer
 
-export T2TARGET=../RawT2RadiologicalIsotropicCropped/${SUBJID}.nii.gz
+export T2TARGET=/indata/RawT2/${SUBJID}.nii.gz
 export T1TARGET=../RawT1RadiologicalIsotropicCropped/${SUBJID}.nii.gz
 
 #if [ "$USET1" == "YES" ]
