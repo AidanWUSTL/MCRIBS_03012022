@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+import numpy
+import sys
+import os
+import nilearn.image
+import nibabel
+import scipy.ndimage.morphology
+import scipy.ndimage
+
+if len(sys.argv) < 2:
+    print("Incorrect number of arguments")
+    print()
+    print("Usage: " + sys.argv[0] + " <subjid>")
+    quit()
+
+subjID = sys.argv[1]
+
+TissueSegManeditFileName = os.path.join('TissueSeg', subjID + "_all_labels_manedit.nii.gz")
+RegionsFileName = os.path.join('SurfReconDeformable', subjID, 'recon', 'regions.nii.gz')
+
+if not os.path.isfile(TissueSegManeditFileName):
+    print("Labels file not found")
+    quit()
+
+if not os.path.isfile(RegionsFileName):
+    print("Regions file not found")
+    quit()
+
+TissueSegManeditOrigNII = nilearn.image.load_img(TissueSegManeditFileName)
+RegionsNII = nilearn.image.load_img(RegionsFileName)
+
+TissueSegManeditRegionsNII = nilearn.image.resample_to_img(TissueSegManeditOrigNII, RegionsNII, interpolation='nearest')
+TissueSegManeditRegionsIMG = nilearn.image.get_data(TissueSegManeditRegionsNII)
+
+# find CSF neighbouring background or extracranial background
+BGMask = numpy.logical_or(TissueSegManeditRegionsIMG == 0, TissueSegManeditRegionsIMG == 84)
+BGMaskDilated = scipy.ndimage.binary_dilation(BGMask)
+
+L, numLabels = scipy.ndimage.label(TissueSegManeditRegionsIMG == 83)
+
+T = L[BGMaskDilated]
+OverlapL = numpy.unique(T[T > 0])
+
+PialForceIMG = numpy.zeros(TissueSegManeditRegionsIMG.shape)
+PialForceIMG[numpy.isin(L, OverlapL)] = 1
+
+PialForceNII = nilearn.image.new_img_like(RegionsNII, PialForceIMG)
+
+#TissueSegManeditRegionsNII = nilearn.image.copy_img(TissueSegManeditRegionsNII)
+
+#NewASEGNII = nibabel.MGHImage(NewASEGIMG, ASEGNII.affine, ASEGNII.header)
+
+nibabel.save(nilearn.image.copy_img(PialForceNII), os.path.join('SurfReconDeformable', subjID, 'temp', 'pial_force.nii.gz'))
