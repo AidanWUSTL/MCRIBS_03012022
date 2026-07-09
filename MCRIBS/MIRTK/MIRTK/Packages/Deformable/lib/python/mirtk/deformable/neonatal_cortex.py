@@ -947,6 +947,9 @@ def subdivide_brain(name, segmentation, white_labels, cortex_labels, right_label
             makedirs(opts['output-inner-cortical-distance'])
         makedirs(name)
         run('subdivide-brain-image', args=[segmentation, name], opts=opts)
+        # pad the regions image to avoid edge effects
+        subprocess.call(['ImageMath', '3', name, 'PadImage', name, '5'])
+        subprocess.call(['ImageMath', '3', cortical_hull_dmap, 'PadImage', cortical_hull_dmap, '5'])
     return name
 
 # ==============================================================================
@@ -1577,8 +1580,8 @@ def recon_white_surface(name, t2w_image, wm_mask, gm_mask, cortex_mesh, bs_cb_me
         }
         model_opts.update(opts)
         if use_mask_distance:
-            #model_opts['implicit-surface'] = push_output(stack, calculate_distance_map(wm_mask, temp=temp))
-            model_opts['implicit-surface'] = push_output(stack, os.path.join(temp, 'wm_force.nii.gz'))
+            model_opts['implicit-surface'] = push_output(stack, calculate_distance_map(wm_mask, temp=temp))
+            #model_opts['implicit-surface'] = push_output(stack, os.path.join(temp, 'wm_force.nii.gz'))
         else:
             remove_keys(model_opts, [
                 'distance',
@@ -1767,7 +1770,11 @@ def recon_pial_surface(name, t2w_image, wm_mask, gm_mask, white_mesh,
 
     default_mask_distance_weight = 0.
     default_edge_distance_weight = 1.
-
+    
+    # get the subject id
+    S = name.split('/')
+    subjID = S[-3]
+    subprocess.call([os.path.join(os.environ['MCRIBS_HOME'], 'bin', 'DeformableMakePialForce'), subjID])
     use_mask_distance = float(opts.get('distance', default_mask_distance_weight)) > 0.
     use_edge_distance = float(opts.get('edge-distance', default_edge_distance_weight)) > 0.
     if not use_mask_distance and not use_edge_distance:
