@@ -376,7 +376,7 @@ if RHDuplicates.size > 0:
     RHIDX = RHIDX[numpy.logical_not(T)]
     PialRHPialCortexIDX = PialRHPialCortexIDX[numpy.logical_not(T)]
 
-#LHIDXMask = numpy.zeros(PialLHPialEqual.size, dtype = numpy.bool)
+#LHIDXMask = numpy.zeros(PialLHPialEqual.size, dtype = bool)
 #LHIDXMask[LHIDX] = True
 
 #outS = dict()
@@ -400,8 +400,8 @@ if RHDuplicates.size > 0:
 #
 
 # store the indices that were updated and which ones were not
-outLHMask = numpy.zeros(WhiteLHSurf['vertices'].shape[1], dtype = numpy.bool)
-outRHMask = numpy.zeros(WhiteRHSurf['vertices'].shape[1], dtype = numpy.bool)
+outLHMask = numpy.zeros(WhiteLHSurf['vertices'].shape[1], dtype = bool)
+outRHMask = numpy.zeros(WhiteRHSurf['vertices'].shape[1], dtype = bool)
 
 outS = dict()
 outS['faces'] = numpy.array(WhiteLHSurf['faces'])
