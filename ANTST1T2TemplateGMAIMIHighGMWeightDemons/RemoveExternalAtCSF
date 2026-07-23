@@ -37,7 +37,7 @@ ExternalBorder = numpy.logical_and(numpy.logical_not(InternalMask), InternalDila
 
 I = numpy.where(ExternalBorder)
 
-ToKeep = numpy.zeros_like(T1IMG, dtype = numpy.bool)
+ToKeep = numpy.zeros_like(T1IMG, dtype = bool)
 
 InternalMaskFiltered = scipy.ndimage.uniform_filter(InternalMask, size = 5)
 InternalMaskFiltered[InternalMaskFiltered == 0] = 1
