@@ -31,7 +31,7 @@ def doMinThickness(SRCSurf, DSTSurf, CortexLabel, vertexNeighbours, correspondin
     #    corticalThickness = numpy.zeros(numVertices, dtype = SRCSurf['vertices'].dtype)
     #else:
     corticalThickness = numpy.array(correspondingDistances)
-    verticesVisited = numpy.zeros(numVertices, dtype = numpy.bool)
+    verticesVisited = numpy.zeros(numVertices, dtype = bool)
 
     for z in CortexLabel['index']:
         curNeighbours = numpy.array([z])
@@ -43,7 +43,7 @@ def doMinThickness(SRCSurf, DSTSurf, CortexLabel, vertexNeighbours, correspondin
         # #else:
         #     XC = curV - DSTSurf['vertices'][:, z]
         #     minDist = numpy.sqrt(numpy.sum(XC * XC))
-        #nextNeighboursMask = numpy.zeros(numVertices, dtype = numpy.bool)
+        #nextNeighboursMask = numpy.zeros(numVertices, dtype = bool)
 
         #oldMinDist = minDist
 
@@ -175,7 +175,7 @@ def main():
     outC['values'] = numpy.single((WhiteToPialThickness + PialToWhiteThickness) / 2.0)
 
     # zero out non-label
-    M = numpy.ones((WhiteToPialThickness.size), dtype = numpy.bool)
+    M = numpy.ones((WhiteToPialThickness.size), dtype = bool)
     M[CortexLabel['index']] = False
     outC['values'][M] = 0
 
